@@ -68,19 +68,19 @@ background(0, 0,0);
      
 
       // game mechanics... check and see if we've tagged the beachball, if so do stuff
-    if(mouseDist < 15){
+    if(mouseDist < 30){
        score ++
        xPos = random (16, windowWidth - 16)
        yPos = random (16, windowHeight - 16)
        
-       xSpeed = xSpeed * 1.1;
-        ySpeed = ySpeed * 1.1;
+       xSpeed = xSpeed * 1.15;
+        ySpeed = ySpeed * 1.15;
 
 
     }
 
     //checking the score, if it reaches a certain value, tigger the win screen
-    if(score == 25){
+    if(score == 30){
       winBool = true
       startBool = false
 
