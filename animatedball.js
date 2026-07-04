@@ -45,7 +45,7 @@ background(0, 0,0);
     fill(255);
     textSize(30);
     text(" Tag to the beachball! Your score is " + score + 'points', 20, 100);
-    image(imgBeachBall, xPos, yPos, 30, 30);
+    image(imgBeachBall, xPos, yPos, 200, 200);
 
    //calculating the distance between mouse and beachball 
     mouseDist = dist(mouseX, mouseY, xPos, yPos)
@@ -80,7 +80,7 @@ background(0, 0,0);
     }
 
     //checking the score, if it reaches a certain value, tigger the win screen
-    if(score == 20){
+    if(score == 25){
       winBool = true
       startBool = false
 
