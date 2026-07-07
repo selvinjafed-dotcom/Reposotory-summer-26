@@ -13,6 +13,7 @@ canvas {
 }
   
   button {
+    width: 400;
      font-family: airStrike;
   background-color: red;
   border: none;
