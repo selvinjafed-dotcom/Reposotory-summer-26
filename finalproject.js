@@ -1,96 +1,95 @@
-let xPos, yPos;
-let xSpeed = 3;
-let ySpeed = 3;
+let canvas;
+let gameState = 0; 
 
-let rectWidth = 100;
-let rectHeight = 100;
-let glitchIntensity = 0;
+let xPos1, yPos1, xSpeed1, ySpeed1;
+let xPos2, yPos2, xSpeed2, ySpeed2;
+let rectWidth = 80;
+let rectHeight = 80;
 
-let mouseDist;
-let startBool = true;
-let winBool = false;
+let score = 0;
+
+let playButton;
 
 function setup() {
-    createCanvas(windowWidth, windowHeight);
-    xPos = windowWidth / 2;
-    yPos = windowHeight / 2;
-    background(10); 
+    canvas = createCanvas(windowWidth, windowHeight);
+    canvas.position(0, 0);
+    canvas.style('z-index', '-1'); 
+
+    playButton = createButton('START EXPLORER');
+    playButton.position(windowWidth / 2 - 75, windowHeight / 2);
+    playButton.style('padding', '10px 20px');
+    playButton.style('font-family', 'Courier New');
+    playButton.mousePressed(startGame);
+
+    xPos1 = random(50, windowWidth / 2 - 100);
+    yPos1 = random(50, windowHeight - 150);
+    xSpeed1 = 4;
+    ySpeed1 = 4;
+
+    xPos2 = random(windowWidth / 2 + 50, windowWidth - 150);
+    yPos2 = random(50, windowHeight - 150);
+    xSpeed2 = -4;
+    ySpeed2 = 3;
+}
+
+function startGame() {
+    gameState = 1;
+    playButton.hide();
+    background(10);
 }
 
 function draw() {
-    if (startBool == true) {
-        generateGlitchArt();
-    }
-    if (winBool == true) {
-        artCompleteScreen();
-    }
-}
+    if (gameState === 0) {
+        background(15);
+        fill(255);
+        textFont('Courier New');
+        textAlign(CENTER, CENTER);
+        textSize(40);
+        text('GLITCH CANVAS EXPLORER', windowWidth / 2, windowHeight / 2 - 80);
+        playButton.show();
+    } else if (gameState === 1) {
+        background(10, 10, 10, 20);
 
-function generateGlitchArt() {
-    background(10, 10, 10, 15); 
+        noStroke();
+        fill(255);
+        textSize(20);
+        textAlign(LEFT);
+        text("SCORE: " + score, 30, 40);
 
-    fill(255);
-    textSize(20);
-    textFont('Courier New');
-    text("GLITCH INTENSITY: " + glitchIntensity + "%", 30, 50);
+        fill(100, 150, 255, 200);
+        rect(xPos1, yPos1, rectWidth, rectHeight);
+        xPos1 += xSpeed1;
+        yPos1 += ySpeed1;
+        if (xPos1 >= windowWidth - rectWidth || xPos1 <= 0) xSpeed1 *= -1;
+        if (yPos1 >= windowHeight - rectHeight || yPos1 <= 0) ySpeed1 *= -1;
 
-    noStroke();
-    fill(xPos % 255, yPos % 255, random(100, 255), 180); 
-    rect(xPos, yPos, rectWidth + random(-10, 10), rectHeight + random(-10, 10));
-
-    mouseDist = dist(mouseX, mouseY, xPos, yPos);
-
-    xPos = xPos + xSpeed;
-    yPos = yPos + ySpeed;
-
-    if (xPos >= windowWidth - 50 || xPos <= 50) {
-        xSpeed = xSpeed * -1;
-    }
-    if (yPos >= windowHeight - 50 || yPos <= 50) {
-        ySpeed = ySpeed * -1;
-    }
-
-    if (mouseDist < 60) {
-        glitchIntensity += 5; 
-        
-        xPos = random(100, windowWidth - 100);
-        yPos = random(100, windowHeight - 100);
-        
-        xSpeed = xSpeed * 1.2;
-        ySpeed = ySpeed * 1.2;
-
-        rectWidth = random(40, 200);
-        rectHeight = random(40, 200);
-
-        stroke(255, random(100));
-        strokeWeight(random(1, 5));
-        line(0, random(windowHeight), windowWidth, random(windowHeight));
-    }
-
-    if (glitchIntensity >= 100) {
-        winBool = true;
-        startBool = false;
+        fill(255, 100, 150, 200);
+        rect(xPos2, yPos2, rectWidth, rectHeight);
+        xPos2 += xSpeed2;
+        yPos2 += ySpeed2;
+        if (xPos2 >= windowWidth - rectWidth || xPos2 <= 0) xSpeed2 *= -1;
+        if (yPos2 >= windowHeight - rectHeight || yPos2 <= 0) ySpeed2 *= -1;
     }
 }
 
-function artCompleteScreen() { 
-    fill(255);
-    noStroke();
-    textSize(35);
-    textFont('Courier New');
-    textAlign(CENTER);
-    text('DIGITAL COMPOSITION COMPLETE', windowWidth / 2, windowHeight / 2);
-    textSize(18);
-    text('Press R to reset the canvas', windowWidth / 2, (windowHeight / 2) + 50);
+function mousePressed() {
+    if (gameState === 1) {
+        let d1 = dist(mouseX, mouseY, xPos1 + rectWidth/2, yPos1 + rectHeight/2);
+        if (d1 < 50) {
+            score += 10;
+            xPos1 = random(50, windowWidth - 100);
+            yPos1 = random(50, windowHeight - 100);
+        }
+
+        let d2 = dist(mouseX, mouseY, xPos2 + rectWidth/2, yPos2 + rectHeight/2);
+        if (d2 < 50) {
+            score += 10;
+            xPos2 = random(50, windowWidth - 100);
+            yPos2 = random(50, windowHeight - 100);
+        }
+    }
 }
 
-function keyPressed() {
-    if ((key == 'r' || key == 'R') && winBool == true) {
-        glitchIntensity = 0;
-        xSpeed = 3;
-        ySpeed = 3;
-        startBool = true;
-        winBool = false;
-        background(10);
-    }
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
 }
