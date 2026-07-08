@@ -1,278 +1,192 @@
-let canvas;
-let gameState = 0; 
-let currentLevel = 1;
-let maxLevels = 5;
+let currentTool = "PAINT"; // Active tool
+let currentColor;
+let showHelp = false; // Controls instruction window
+let showHome = true;  // Controls home page
 
-let xPositions ;
-let yPositions ;
-let xSpeeds ;
-let ySpeeds ;
-let shapes ;
-let hits ;
-
-let rectWidth = 90;
-let rectHeight = 90;
-let baseShapesCount = 2;
-
-let score = 0;
-let targetScore = 50; 
-let timer;
-let timeLimit; 
-
-let playButton;
+let startX, startY;
+let shapesList = [];
 
 function setup() {
-    canvas = createCanvas(windowWidth, windowHeight);
-    canvas.position(0, 0);
-    canvas.style('z-index', '-1'); 
-
-    playButton = createButton('START EXPLORER');
-    playButton.position(windowWidth / 2 - 75, windowHeight / 2 + 50);
-    playButton.style('padding', '10px 20px');
-    playButton.style('font-family', 'Courier New');
-    playButton.mousePressed(startGame);
-
-    initLevelValues();
-}
-
-function startGame() {
-    gameState = 1;
-    playButton.hide();
-    background(10);
-}
-
-function initLevelValues() {
-    score = 0;
-
-    if (currentLevel === 1) {
-        baseShapesCount = 2;
-        targetScore = 40;
-        timeLimit = 50; 
-    } else if (currentLevel === 2) {
-        baseShapesCount = 4;
-        targetScore = 60;
-        timeLimit = 45; 
-    } else if (currentLevel === 3) {
-        baseShapesCount = 6;
-        targetScore = 80;
-        timeLimit = 40; 
-    } else if (currentLevel === 4) {
-        baseShapesCount = 8;
-        targetScore = 110;
-        timeLimit = 35; 
-    } else if (currentLevel === 5) {
-        baseShapesCount = 10;
-        targetScore = 140;
-        timeLimit = 30; 
-    }
-    
-    timer = timeLimit;
-    resetTargetGroup();
-}
-
-function resetTargetGroup() {
-    xPositions = [];
-    yPositions = [];
-    xSpeeds = [];
-    ySpeeds = [];
-    shapes = [];
-    hits = [];
-
-    let chosenShapeGroup = int(random(0, 5));
-    rectWidth = random(55, 95);
-    rectHeight = random(55, 95);
-
-    let speedMultiplier = 3 + currentLevel * 1.5;
-
-    for (let i = 0; i < baseShapesCount; i++) {
-        xPositions.push(random(100, windowWidth - 150));
-        yPositions.push(random(100, windowHeight - 150));
-        
-        let sx = random(-speedMultiplier, speedMultiplier);
-        let sy = random(-speedMultiplier, speedMultiplier);
-        if (abs(sx) < 1) sx = sx > 0 ? 2 : -2;
-        if (abs(sy) < 1) sy = sy > 0 ? 2 : -2;
-        
-        xSpeeds.push(sx);
-        ySpeeds.push(sy);
-        shapes.push(chosenShapeGroup);
-        hits.push(false);
-    }
+  createCanvas(windowWidth, windowHeight);
+  currentColor = color(0, 255, 200); // Initial color (Cyan)
 }
 
 function draw() {
-    if (gameState === 0) {
-        drawHomeScreen();
-    } else if (gameState === 1) {
-        drawGameScreen();
-    } else if (gameState === 2) {
-        drawLoseScreen();
-    } else if (gameState === 3) {
-        drawWinScreen();
-    }
+  if (showHome) {
+    drawHomeScreen();
+  } else {
+    drawCanvasScreen();
+  }
 }
 
+// 1. HOME PAGE SCREEN (Simple Floating Background)
 function drawHomeScreen() {
-    background(15);
-    fill(255);
-    textFont('Courier New');
-    textAlign(CENTER, CENTER);
-    
-    textSize(45);
-    text('GLITCH CANVAS EXPLORER', windowWidth / 2, windowHeight / 2 - 100);
-    
-    playButton.show();
+  background(15, 15, 20);
+  noStroke();
+  
+  // Movimiento súper simple usando frameCount
+  fill(0, 150, 255, 40);
+  ellipse(width * 0.2, (height * 0.7) + sin(frameCount * 0.02) * 30, 300);
+  
+  fill(255, 0, 120, 35);
+  ellipse((width * 0.7) + cos(frameCount * 0.02) * 30, height * 0.3, 350);
+  
+  fill(200, 255, 0, 30);
+  ellipse(width * 0.8, (height * 0.8) + sin(frameCount * 0.03) * 20, 250);
+  
+  fill(150, 0, 255, 40);
+  ellipse(width * 0.3, (height * 0.2) + cos(frameCount * 0.02) * 25, 280);
+
+  // Title Text
+  noStroke();
+  fill(0, 255, 200);
+  textSize(50);
+  textFont('Courier New');
+  textAlign(CENTER, CENTER);
+  text("LET'S PAINT", width / 2, height / 2 - 30);
+
+  fill(255);
+  textSize(16);
+  text("Press ANY KEY or CLICK to Start", width / 2, height / 2 + 40);
 }
 
-function drawShape(type, x, y, w, h) {
-    if (type === 0) {
-        rect(x, y, w, h);
-    } else if (type === 1) {
-        triangle(x + w / 2, y, x, y + h, x + w, y + h);
-    } else if (type === 2) {
-        push();
-        translate(x + w / 2, y + h / 4);
-        beginShape();
-        vertex(0, 0);
-        bezierVertex(-w / 2, -h / 2, -w, h / 3, 0, h * 0.75);
-        bezierVertex(w, h / 3, w / 2, -h / 2, 0, 0);
-        endShape(CLOSE);
-        pop();
-    } else if (type === 3) {
-        ellipse(x + w / 2, y + h / 2, w, h);
-    } else if (type === 4) {
-        push();
-        translate(x + w / 2, y + h / 2);
-        beginShape();
-        for (let i = 0; i < 5; i++) {
-            let angleA = TWO_PI / 5 * i - HALF_PI;
-            let xA = cos(angleA) * (w / 2);
-            let yA = sin(angleA) * (h / 2);
-            vertex(xA, yA);
-            let angleB = TWO_PI / 5 * i + TWO_PI / 10 - HALF_PI;
-            let xB = cos(angleB) * (w / 4);
-            let yB = sin(angleB) * (h / 4);
-            vertex(xB, yB);
-        }
-        endShape(CLOSE);
-        pop();
-    }
-}
+// 2. MAIN DRAWING CANVAS (Pure Dark Background)
+function drawCanvasScreen() {
+  background(20); // Borra todo para dejar el lienzo limpio
+  textAlign(LEFT, BASELINE);
 
-function drawGameScreen() {
-    background(10, 10, 10, 15);
-
-    if (frameCount % 60 === 0 && timer > 0) {
-        timer--;
-    }
-
-    if (timer <= 0) {
-        gameState = 2; 
-    }
-
-    noStroke();
-    fill(255);
-    textSize(20);
-    textAlign(LEFT);
-    text("LEVEL: " + currentLevel + " / " + maxLevels, 30, 40);
-    text("SCORE: " + score + " / " + targetScore, 30, 70);
+  // Draw saved shapes
+  for (let i = 0; i < shapesList.length; i++) {
+    let s = shapesList[i];
     
-    if (timer < 5) fill(255, 0, 0);
-    text("TIME LEFT: " + timer + "s", 30, 100);
+    fill(s.c);
+    stroke(255);
+    strokeWeight(1.5);
 
-    let dynamicWidth = rectWidth + random(-4, 4);
-    let dynamicHeight = rectHeight + random(-4, 4);
-    let allCleared = true;
+    // Simple glitch jitter
+    let gx = s.x + random(-2, 2);
+    let gy = s.y + random(-2, 2);
 
-    for (let i = 0; i < baseShapesCount; i++) {
-        if (!hits[i]) {
-            allCleared = false;
-
-            fill((xPositions[i] + i * 30) % 255, (yPositions[i] + i * 50) % 255, random(150, 255), 180);
-            drawShape(shapes[i], xPositions[i], yPositions[i], dynamicWidth, dynamicHeight);
-
-            xPositions[i] += xSpeeds[i];
-            yPositions[i] += ySpeeds[i];
-
-            if (xPositions[i] >= windowWidth - rectWidth || xPositions[i] <= 0) xSpeeds[i] *= -1;
-            if (yPositions[i] >= windowHeight - rectHeight || yPositions[i] <= 0) ySpeeds[i] *= -1;
-        }
+    if (s.type === "SQUARE") {
+      rect(gx, gy, s.size, s.size);
+    } else if (s.type === "CIRCLE") {
+      ellipse(gx + s.size / 2, gy + s.size / 2, s.size);
+    } else if (s.type === "RECTANGLE") {
+      rect(gx, gy, s.size, s.size / 2);
+    } else if (s.type === "LINE") {
+      stroke(s.c);
+      strokeWeight(3);
+      line(s.x, s.y, s.x2, s.y2);
     }
+  }
 
-    if (allCleared) {
-        resetTargetGroup();
-        background(0, 120, 50, 30);
-    }
+  // Free paint brush with mouse
+  if (mouseIsPressed && currentTool === "PAINT" && !showHelp) {
+    shapesList.push({
+      type: "LINE",
+      x: pmouseX,
+      y: pmouseY,
+      x2: mouseX,
+      y2: mouseY,
+      c: currentColor
+    });
+  }
 
-    if (score >= targetScore) {
-        if (currentLevel < maxLevels) {
-            currentLevel++;
-            initLevelValues();
-            background(10); 
-        } else {
-            gameState = 3; 
-        }
-    }
+  // Simple HUD UI
+  noStroke();
+  fill(255);
+  textSize(16);
+  textFont('Courier New');
+  text("TOOL: " + currentTool, 20, 30);
+  
+  fill(currentColor);
+  rect(20, 45, 15, 15);
+  fill(255);
+  text("COLOR [B]", 45, 58);
+
+  fill(180);
+  textSize(13);
+  text("Press [W] for Instructions", 20, height - 25);
+
+  // Instruction Window
+  if (showHelp) {
+    drawInstructions();
+  }
 }
 
+// INSTRUCTIONS WINDOW
+function drawInstructions() {
+  textAlign(LEFT, BASELINE);
+  fill(10, 10, 15, 230);
+  stroke(0, 255, 200);
+  strokeWeight(2);
+  rect(50, 50, 320, 290);
+
+  noStroke();
+  fill(0, 255, 200);
+  textSize(18);
+  text("--- INSTRUCTIONS ---", 70, 85);
+
+  fill(255);
+  textSize(14);
+  text("D : Square Tool", 70, 120);
+  text("G : Circle Tool", 70, 145);
+  text("H : Rectangle Tool", 70, 170);
+  text("L : Free Paint Brush", 70, 195);
+  text("B : Change Color", 70, 220);
+  text("S : Save PNG Artwork", 70, 245);
+  text("W : Toggle Help Menu", 70, 270);
+
+  fill(255, 0, 100);
+  text("Click & drag to draw shapes!", 70, 310);
+}
+
+// MOUSE EVENTS
 function mousePressed() {
-    if (gameState === 1) {
-        for (let i = 0; i < baseShapesCount; i++) {
-            if (!hits[i]) {
-                let d = dist(mouseX, mouseY, xPositions[i] + rectWidth / 2, yPositions[i] + rectHeight / 2);
-                if (d < 55) {
-                    hits[i] = true;
-                    score += 10;
-                    background(0, i * 20 + 20, 0, 40);
-                    break; 
-                }
-            }
-        }
-    }
+  if (showHome) {
+    showHome = false;
+    return;
+  }
+  startX = mouseX;
+  startY = mouseY;
 }
 
-function drawLoseScreen() {
-    background(0);
-    fill(255, 0, 0);
-    textFont('Courier New');
-    textAlign(CENTER, CENTER);
-    textSize(50);
-    text('YOU LOSE...', windowWidth / 2, windowHeight / 2 - 50);
-    
-    fill(255);
-    textSize(20);
-    text('The system is laughing at you.', windowWidth / 2, windowHeight / 2 + 20);
-    textSize(15);
-    text('Press "R" to reset and try again from Level 1', windowWidth / 2, windowHeight / 2 + 70);
+function mouseReleased() {
+  if (showHome || currentTool === "PAINT" || showHelp) return;
+
+  let d = dist(startX, startY, mouseX, mouseY);
+  if (d > 15) {
+    shapesList.push({
+      type: currentTool,
+      x: min(startX, mouseX),
+      y: min(startY, mouseY),
+      size: d,
+      c: currentColor
+    });
+  }
 }
 
-function drawWinScreen() {
-    background(10);
-    fill(0, 255, 150);
-    textFont('Courier New');
-    textAlign(CENTER, CENTER);
-    
-    textSize(40);
-    text('DIGITAL COMPOSITION COMPLETE', windowWidth / 2, windowHeight / 2 - 30);
-    
-    fill(255);
-    textSize(18);
-    text('You successfully broke the matrix across all levels.', windowWidth / 2, windowHeight / 2 + 30);
-    textSize(15);
-    text('Press "R" to reset and return to Home', windowWidth / 2, windowHeight / 2 + 80);
-}
-
+// KEYBOARD EVENTS
 function keyPressed() {
-    if (key === 'r' || key === 'R') {
-        if (gameState === 2 || gameState === 3) {
-            currentLevel = 1;
-            initLevelValues();
-            gameState = 0; 
-            background(10);
-        }
-    }
-}
+  if (showHome) {
+    showHome = false;
+    return;
+  }
 
-function windowResized() {
-    resizeCanvas(windowWidth, windowHeight);
+  let k = key.toUpperCase();
+
+  if (k === 'D') currentTool = "SQUARE";
+  if (k === 'G') currentTool = "CIRCLE";
+  if (k === 'H') currentTool = "RECTANGLE";
+  if (k === 'L') currentTool = "PAINT";
+  
+  if (k === 'B') {
+    currentColor = color(random(255), random(255), random(255));
+  }
+  if (k === 'S') {
+    saveCanvas('my_artwork', 'png');
+  }
+  if (k === 'W') {
+    showHelp = !showHelp;
+  }
 }

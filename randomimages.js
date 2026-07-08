@@ -10,11 +10,17 @@ let myImages = ['0.jpg', '1.jpg', '2.jpg', 'tiger.png']
 
 function preload(){
 
- for(i = 0, i < 3; i + ){
-   imgs[1] = loadImage ('images/' + i + '.jpg')
+ //for(i = 0, i < 3; i + ){
+   //imgs[1] = loadImage ('images/' + i + '.jpg')
 
- }
+ //}
   
+  for (let i = 0 ; i < myImages ; length i +){
+   imgs[i] = loadImage (' images/', myImages[i])
+
+
+  }
+
   print(imgs)
 
 
@@ -44,6 +50,11 @@ function randomImageText(){
 function draw() {
 
    background(255)
+
+   if(randomBool = true ){
+  image(windowWidth, windowHeight)
+
+   }
 
    textSize(300)
 
