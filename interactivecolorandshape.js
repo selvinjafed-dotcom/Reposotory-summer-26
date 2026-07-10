@@ -1,6 +1,7 @@
 let imgUmbrella;
 let imgBeachBall;
 
+
 let showUmbrella = false;
 let showBeachBall = false;
 

@@ -13,7 +13,7 @@ canvas {
 }
   
   button {
-    width: 400;
+    
      font-family: airStrike;
   background-color: red;
   border: none;
@@ -24,4 +24,14 @@ canvas {
   display: inline-block;
   font-size: 16px;
   cursor: pointer;
+}
+
+.instDiv{
+  font-family: Arial;
+  color: white;
+  border: 2px solid white;
+  padding: 10px 10px;
+  background-color: black;
+  border-radius: 15px;
+
 }
